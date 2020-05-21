@@ -1,0 +1,8 @@
+[package]
+name = "lifetime-variance-example"
+version = "0.1.0"
+authors = ["Rain <rain@sunshowers.io>"]
+edition = "2018"
+
+[features]
+compile-fail = []
