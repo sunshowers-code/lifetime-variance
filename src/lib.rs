@@ -384,5 +384,5 @@ struct SimpleMessageCollector2<'a> {
 // ---
 
 // Anyway, hope this made you feel more confident using lifetimes in your Rust code! They're
-// a very powerful way to write safe, blazing fast code. But variance can often cause issues in
-// practice. Knowledge of how variance works is an important part of using lifetimes effectively.
+// a very powerful way to write safe, blazing fast code. But variance can often cause obscure issues
+// in practice. Knowledge of how variance works is key to using lifetimes effectively.
