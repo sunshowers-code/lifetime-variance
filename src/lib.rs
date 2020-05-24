@@ -18,6 +18,8 @@
 //! This example can be compiled and tested through Cargo.
 
 use std::cell::Cell;
+use std::collections::HashMap;
+use std::fmt;
 
 // Consider this somewhat contrived function that takes a static string and makes its lifetime
 // shorter:
@@ -79,7 +81,7 @@ fn cell_lengthener<'a>(s: &'a Cell<&'a str>) -> &'a Cell<&'static str> {
 }
 
 // But what about this?
-fn callback_lengthener<'a>(f: fn(&'a str) -> ()) -> fn(&'static str) -> () {
+fn fn_ptr_lengthener<'a>(f: fn(&'a str) -> ()) -> fn(&'static str) -> () {
     f
 }
 
@@ -96,9 +98,291 @@ struct OutlivesExample<'a, 'b: 'a> {
     b_str: &'b str,
 }
 
-// the borrowed string `b_str` lives at least as long as `a_str`, possibly longer.
+// the borrowed string `b_str` lives at least as long as `a_str`, and possibly longer.
 
 // The Rust compiler annotates every lifetime parameter with one of three settings. For a type
 // T<'a>, 'a may be:
-// * *covariant*, which means that if 'a: 'b then T<'a>: T<'b>.
-// * *contravariant*, which means
+//
+// * *covariant*, which means that if 'a: 'b then T<'a>: T<'b>. This is the default for immutable
+//   data.
+//
+// * *invariant*, which means that no matter what relationship 'a and 'b have, T<'a> and T<'b> have
+//   no relationship between them. This happens if the lifetime is "inside" some sort of mutability
+//   -- whether a &mut pointer, or interior mutability like Cell/RefCell/Mutex.
+//
+// * *contravariant*, which means that if 'a: 'b then T<'b>: T<'a>. This is uncommon and only shows
+//   up in parameters to fn pointers.
+
+// ---
+
+// Quick exercise. In the struct below, what are the variances of each lifetime parameter?
+
+struct Multi<'a, 'b, 'c, 'd1, 'd2> {
+    a: &'a str,
+    b: Cell<&'b str>,
+    c: fn(&'c str) -> usize,
+    d: &'d1 mut &'d2 str,
+}
+
+// ...
+
+// The answers:
+// * 'a is covariant, because it only shows up in an immutable context.
+//   This means that you can define a function like:
+
+fn a<'a, 'b, 'c, 'd1, 'd2>(x: Multi<'static, 'b, 'c, 'd1, 'd2>) -> Multi<'a, 'b, 'c, 'd1, 'd2> {
+    x
+}
+
+// * 'b is invariant, because it guards immutable data.
+// (Exercise: try writing a function that fails to compile because 'b is invariant.)
+
+// * 'c is contravariant, because it shows up in the parameter to a callback.
+
+fn c<'a, 'b, 'c, 'd1, 'd2>(x: Multi<'a, 'b, 'c, 'd1, 'd2>) -> Multi<'a, 'b, 'static, 'd1, 'd2> {
+    x
+}
+
+// * 'd1 is *covariant*! Even though it is a mutable reference, it is not "inside" the &mut pointer.
+
+fn d1<'a, 'b, 'c, 'd1, 'd2>(x: Multi<'a, 'b, 'c, 'static, 'd2>) -> Multi<'a, 'b, 'c, 'd1, 'd2> {
+    x
+}
+
+// * 'd2 is invariant, because it is "inside" a &mut reference.
+
+// ---
+
+// What if a lifetime parameter is used in multiple spots with different variances? For example:
+
+struct TwoSpots<'a> {
+    foo: &'a str,
+    bar: Cell<&'a str>,
+}
+
+// It's as you might expect:
+// * If all the uses agree on a particular variance, the parameter has that variance.
+// * Otherwise, the parameter defaults to invariant.
+
+// And what about this sort of situation?
+
+struct TypeParams<T, U> {
+    t: Vec<T>,
+    u: fn(U) -> (),
+}
+
+// T and U are also annotated with a variance, which is used if they're substituted with
+// a type containing a lifetime parameter. For example:
+
+struct LifetimeParams<'a, 'b> {
+    nested: TypeParams<&'a str, &'b str>,
+}
+
+// Here, 'a is covariant and 'b is contravariant. Let's test those together:
+fn lifetime_check<'a, 'b>(x: LifetimeParams<'static, 'b>) -> LifetimeParams<'a, 'static> {
+    x
+}
+
+// ---
+
+// So why should you, as a Rust developer, care?
+
+// In general, if you're just using Arcs everywhere, you probably don't need to care. But
+// if your code involves lifetime parameters, some of the thorniest issues getting rustc to
+// work on it end up boiling down to variance issues.
+//
+// For example, consider this situation, extracted from some real-world Rust code:
+
+// Consider this struct representing a message.
+struct Message<'msg> {
+    message: &'msg str,
+}
+
+// ... this struct that collects messages to be displayed.
+struct MessageCollector<'a, 'msg> {
+    list: &'a mut Vec<Message<'msg>>,
+}
+
+impl<'a, 'msg> MessageCollector<'a, 'msg> {
+    // This adds a message to the end of the list.
+    fn add_message(&mut self, message: Message<'msg>) {
+        self.list.push(message);
+    }
+}
+
+// And this struct that displays collected messages.
+struct MessageDisplayer<'a, 'msg> {
+    list: &'a Vec<Message<'msg>>,
+}
+
+impl<'a, 'msg> fmt::Display for MessageDisplayer<'a, 'msg> {
+    // This displays all the messages, separated by newlines.
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        for message in self.list {
+            write!(f, "{}\n", message.message)?;
+        }
+        Ok(())
+    }
+}
+
+fn message_example() {
+    // Here's a simple source of messages.
+    let mut messages: HashMap<usize, String> = HashMap::new();
+    messages.insert(10, "ten".to_string());
+    messages.insert(20, "twenty".to_string());
+
+    // All right, let's try collecting and displaying some messages!
+    collect_and_display(&messages);
+}
+
+fn collect_and_display<'msg>(messages: &'msg HashMap<usize, String>) -> Vec<Message<'msg>> {
+    let mut list = vec![];
+
+    // Collect some messages. (This is pretty simple but you can imagine the collector being passed
+    // into other code.)
+    let mut collector = MessageCollector { list: &mut list };
+    let ten_message = Message {
+        message: &messages[&10],
+    };
+    collector.add_message(ten_message);
+
+    // Now let's display those messages!
+    let displayer = MessageDisplayer { list: &list };
+    println!("{}", displayer);
+
+    // And finally, return the list.
+    list
+}
+
+// This works, but can it be simplified? Let's try reducing the number of lifetime parameters, first
+// for the displayer.
+struct SimpleMessageDisplayer<'a> {
+    list: &'a Vec<Message<'a>>,
+}
+
+impl<'a> fmt::Display for SimpleMessageDisplayer<'a> {
+    // This displays all the messages.
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        for message in self.list {
+            write!(f, "{}\n", message.message)?;
+        }
+        Ok(())
+    }
+}
+
+fn collect_and_display_2<'msg>(messages: &'msg HashMap<usize, String>) -> Vec<Message<'msg>> {
+    // OK, let's do the same thing as collect_and_display, except using the simple displayer.
+    let mut list = vec![];
+
+    // Collect some messages.
+    let mut collector = MessageCollector { list: &mut list };
+    let ten_message = Message {
+        message: &messages[&10],
+    };
+    collector.add_message(ten_message);
+
+    // Display them.
+    let displayer = SimpleMessageDisplayer { list: &list };
+    println!("{}", displayer);
+
+    // And finally, return the list.
+    list
+}
+
+// OK, that worked. Can we do the same for the collector? Let's try it out:
+
+struct SimpleMessageCollector<'a> {
+    list: &'a mut Vec<Message<'a>>,
+}
+
+impl<'a> SimpleMessageCollector<'a> {
+    // This adds a message to the end of the list.
+    fn add_message(&mut self, message: Message<'a>) {
+        self.list.push(message);
+    }
+}
+
+#[cfg(feature = "compile-fail-final")]
+fn collect_and_display_3<'msg>(messages: &'msg HashMap<usize, String>) -> Vec<Message<'msg>> {
+    // OK, one more time.
+    let mut list = vec![];
+
+    // Collect some messages.
+    let mut collector = SimpleMessageCollector { list: &mut list };
+    let ten_message = Message {
+        message: &messages[&10],
+    };
+    collector.add_message(ten_message);
+
+    // Display them.
+    let displayer = SimpleMessageDisplayer { list: &list };
+    println!("{}", displayer);
+
+    // And finally, return the list.
+    list
+}
+
+// That doesn't work! rustc (as of 1.43.1) errors out with "cannot move out of `list` because
+// it is borrowed".
+//
+// Why did reducing the number of lifetime params work for MessageDisplayer but not
+// MessageCollector? It's all because of variance. Let's have a look at the structs again, first
+// the displayer:
+
+struct MessageDisplayer2<'a, 'msg> {
+    // Two lifetime parameters:
+    list: &'a Vec<Message<'msg>>,
+    // Here, the compiler can vary the two independently, so the list can be held onto a shorter
+    // lifetime than 'msg, then released.
+}
+
+// The simple version:
+struct SimpleMessageDisplayer2<'a> {
+    // 'a is used in two spots:
+    //
+    //     |               |
+    //     v               v
+    list: &'a Vec<Message<'a>>,
+    //
+    // But since both of them are covariant (in immutable positions), 'a is covariant as well.
+    // This means that the compiler can internally transform &'a Vec<Message<'msg>> into
+    // the shorter &'a Vec<Message<'a>>, and hold the list for the shorter 'a duration.
+}
+
+// Now the collector:
+struct MessageCollector2<'a, 'msg> {
+    // Two lifetime parameters, again:
+    list: &'a mut Vec<Message<'msg>>,
+    // Here, 'a is covariant, but 'msg is invariant since it is "inside" a &mut reference.
+    // The compiler can vary the two independently, which means that the list can be held onto for a
+    // shorter lifetime than 'msg.
+}
+
+// Finally, the problematic simple version:
+struct SimpleMessageCollector2<'a> {
+    // 'a is used in two spots again:
+    //
+    //     |                   |
+    //     v                   v
+    list: &'a mut Vec<Message<'a>>,
+    //
+    // The first 'a is covariant, but the second one is invariant since it is "inside" a &mut
+    // reference! This means that 'a is invariant, and this ends up causing the compiler to try and
+    // hold on to the list for longer than with the standard MessageCollector.
+}
+
+// ---
+
+// A final note if you're writing a Rust library:
+//
+// Changing the variance of a parameter (lifetime or type) from covariant to anything else, or from
+// contravariant to anything else, is a BREAKING CHANGE. If you're following semver, it can only be
+// done with a new major version.
+//
+// Changing a parameter from invariant to co- or contravariant is not a breaking change.
+
+// ---
+
+// Anyway, hope this made you feel more confident using lifetimes in your Rust code! They're
+// a very powerful way to write safe, blazing fast code. But variance can often cause issues in
+// practice. Knowledge of how variance works is an important part of using lifetimes effectively.

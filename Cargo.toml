@@ -6,3 +6,4 @@ edition = "2018"
 
 [features]
 compile-fail = []
+compile-fail-final = []
