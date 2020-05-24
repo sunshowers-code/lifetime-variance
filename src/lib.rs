@@ -47,7 +47,7 @@ fn cell_example() {
     let foo: Cell<&'static str> = Cell::new("foo");
 
     // Do you think this can work?
-    let non_static_string = "non_static".to_string();
+    let non_static_string = "non_static".to_owned();
     foo.replace(&non_static_string);
 
     // Doesn't seem like it can, right? foo promises that what's inside it is a &'static str, but
@@ -228,8 +228,8 @@ impl<'a, 'msg> fmt::Display for MessageDisplayer<'a, 'msg> {
 fn message_example() {
     // Here's a simple source of messages.
     let mut messages: HashMap<usize, String> = HashMap::new();
-    messages.insert(10, "ten".to_string());
-    messages.insert(20, "twenty".to_string());
+    messages.insert(10, "ten".to_owned());
+    messages.insert(20, "twenty".to_owned());
 
     // All right, let's try collecting and displaying some messages!
     collect_and_display(&messages);
@@ -386,3 +386,6 @@ struct SimpleMessageCollector2<'a> {
 // Anyway, hope this made you feel more confident using lifetimes in your Rust code! They're
 // a very powerful way to write safe, blazing fast code. But variance can often cause obscure issues
 // in practice. Knowledge of how variance works is key to using lifetimes effectively.
+
+// Thanks to the following people for their feedback:
+// * Nikolai Vazquez (@NikolaiVazquez on Twitter, nvzqz on GitHub)
