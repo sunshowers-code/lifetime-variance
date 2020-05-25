@@ -80,7 +80,7 @@ fn cell_lengthener<'a, 'b>(s: &'a Cell<&'b str>) -> &'a Cell<&'static str> {
     s
 }
 
-// But what about this? fn is a pointer to a function that takes an
+// But what about this? fn is a pointer to a function that takes an arbitrary borrowed string.
 fn fn_ptr_lengthener<'a>(f: fn(&'a str) -> ()) -> fn(&'static str) -> () {
     f
 }
@@ -240,7 +240,7 @@ fn message_example() {
     collect_and_display(&messages);
 }
 
-fn collect_and_display<'msg>(messages: &'msg HashMap<usize, String>) -> Vec<Message<'msg>> {
+fn collect_and_display<'msg>(messages: &'msg HashMap<usize, String>) {
     let mut list = vec![];
 
     // Collect some messages. (This is pretty simple but you can imagine the collector being passed
@@ -254,9 +254,6 @@ fn collect_and_display<'msg>(messages: &'msg HashMap<usize, String>) -> Vec<Mess
     // Now let's display those messages!
     let displayer = MessageDisplayer { list: &list };
     println!("{}", displayer);
-
-    // And finally, return the list.
-    list
 }
 
 // This works, but can it be simplified? Let's try reducing the number of lifetime parameters, first
@@ -275,7 +272,7 @@ impl<'a> fmt::Display for SimpleMessageDisplayer<'a> {
     }
 }
 
-fn collect_and_display_2<'msg>(messages: &'msg HashMap<usize, String>) -> Vec<Message<'msg>> {
+fn collect_and_display_2<'msg>(messages: &'msg HashMap<usize, String>) {
     // OK, let's do the same thing as collect_and_display, except using the simple displayer.
     let mut list = vec![];
 
@@ -286,12 +283,9 @@ fn collect_and_display_2<'msg>(messages: &'msg HashMap<usize, String>) -> Vec<Me
     };
     collector.add_message(ten_message);
 
-    // Display them.
+    // Finally, display them.
     let displayer = SimpleMessageDisplayer { list: &list };
     println!("{}", displayer);
-
-    // And finally, return the list.
-    list
 }
 
 // OK, that worked. Can we do the same for the collector? Let's try it out:
@@ -308,7 +302,7 @@ impl<'a> SimpleMessageCollector<'a> {
 }
 
 #[cfg(feature = "compile-fail-final")]
-fn collect_and_display_3<'msg>(messages: &'msg HashMap<usize, String>) -> Vec<Message<'msg>> {
+fn collect_and_display_3<'msg>(messages: &'msg HashMap<usize, String>) {
     // OK, one more time.
     let mut list = vec![];
 
@@ -319,16 +313,13 @@ fn collect_and_display_3<'msg>(messages: &'msg HashMap<usize, String>) -> Vec<Me
     };
     collector.add_message(ten_message);
 
-    // Display them.
+    // Finally, display them.
     let displayer = SimpleMessageDisplayer { list: &list };
     println!("{}", displayer);
-
-    // And finally, return the list.
-    list
 }
 
-// That doesn't work! rustc (as of 1.43.1) errors out with "cannot move out of `list` because
-// it is borrowed".
+// That doesn't work! rustc (as of 1.43.1) errors out with "cannot borrow `list` as immutable
+// because it is also borrowed as mutable".
 //
 // Why did reducing the number of lifetime params work for MessageDisplayer but not
 // MessageCollector? It's all because of variance. Let's have a look at the structs again, first
