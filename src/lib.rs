@@ -18,7 +18,7 @@
 //! This example can be compiled and tested through Cargo.
 
 use std::cell::Cell;
-use std::collections::HashMap;
+use std::collections::HashSet;
 use std::fmt;
 
 // Consider this somewhat contrived function that takes a static string and makes its lifetime
@@ -231,25 +231,24 @@ impl<'a, 'msg> fmt::Display for MessageDisplayer<'a, 'msg> {
 }
 
 fn message_example() {
-    // Here's a simple source of messages.
-    let mut messages: HashMap<usize, String> = HashMap::new();
-    messages.insert(10, "ten".to_owned());
-    messages.insert(20, "twenty".to_owned());
+    // Here's a simple pool of messages.
+    let mut message_pool: HashSet<String> = HashSet::new();
+    message_pool.insert("ten".to_owned());
+    message_pool.insert("twenty".to_owned());
 
     // All right, let's try collecting and displaying some messages!
-    collect_and_display(&messages);
+    collect_and_display(&message_pool);
 }
 
-fn collect_and_display<'msg>(messages: &'msg HashMap<usize, String>) {
+fn collect_and_display<'msg>(message_pool: &'msg HashSet<String>) {
     let mut list = vec![];
 
     // Collect some messages. (This is pretty simple but you can imagine the collector being passed
     // into other code.)
     let mut collector = MessageCollector { list: &mut list };
-    let ten_message = Message {
-        message: &messages[&10],
-    };
-    collector.add_message(ten_message);
+    for message in message_pool {
+        collector.add_message(Message { message });
+    }
 
     // Now let's display those messages!
     let displayer = MessageDisplayer { list: &list };
@@ -272,16 +271,15 @@ impl<'a> fmt::Display for SimpleMessageDisplayer<'a> {
     }
 }
 
-fn collect_and_display_2<'msg>(messages: &'msg HashMap<usize, String>) {
+fn collect_and_display_2<'msg>(message_pool: &'msg HashSet<String>) {
     // OK, let's do the same thing as collect_and_display, except using the simple displayer.
     let mut list = vec![];
 
     // Collect some messages.
     let mut collector = MessageCollector { list: &mut list };
-    let ten_message = Message {
-        message: &messages[&10],
-    };
-    collector.add_message(ten_message);
+    for message in message_pool {
+        collector.add_message(Message { message });
+    }
 
     // Finally, display them.
     let displayer = SimpleMessageDisplayer { list: &list };
@@ -302,16 +300,15 @@ impl<'a> SimpleMessageCollector<'a> {
 }
 
 #[cfg(feature = "compile-fail-final")]
-fn collect_and_display_3<'msg>(messages: &'msg HashMap<usize, String>) {
+fn collect_and_display_3<'msg>(message_pool: &'msg HashSet<String>) {
     // OK, one more time.
     let mut list = vec![];
 
     // Collect some messages.
     let mut collector = SimpleMessageCollector { list: &mut list };
-    let ten_message = Message {
-        message: &messages[&10],
-    };
-    collector.add_message(ten_message);
+    for message in message_pool {
+        collector.add_message(Message { message });
+    }
 
     // Finally, display them.
     let displayer = SimpleMessageDisplayer { list: &list };
