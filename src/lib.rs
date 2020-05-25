@@ -33,7 +33,7 @@ fn lifetime_shortener<'a>(s: &'static str) -> &'a str {
 // Now let's make it slightly more complicated. Let's introduce a `Cell` into the picture. As a
 // reminder, a Cell allows for the data inside it to be changed.
 #[cfg(feature = "compile-fail")]
-fn cell_shortener<'a>(s: &'a Cell<&'static str>) -> &'a Cell<&'a str> {
+fn cell_shortener<'a, 'b>(s: &'a Cell<&'static str>) -> &'a Cell<&'b str> {
     s
 }
 
@@ -47,11 +47,11 @@ fn cell_example() {
     let foo: Cell<&'static str> = Cell::new("foo");
 
     // Do you think this can work?
-    let non_static_string = "non_static".to_owned();
-    foo.replace(&non_static_string);
+    let owned_string: String = "non_static".to_owned();
+    foo.replace(&owned_string);
 
     // Doesn't seem like it can, right? foo promises that what's inside it is a &'static str, but
-    // we tried to put in a non-static string.
+    // we tried to put in an owned string scoped to this function.
 
     // But! If this function call worked...
     let shorter_foo = cell_shortener(&foo);
@@ -64,7 +64,7 @@ fn cell_example() {
 }
 
 // It isn't just Cell which is problematic in this way. RefCell, OnceCell, Mutex, &mut references --
-// anything which lets you mutate "what's inside it" has this issue.
+// anything "inside" some sort of mutable context has this issue.
 
 // Now, what about a hypothetical "lengthener" function?
 #[cfg(feature = "compile-fail")]
@@ -76,17 +76,19 @@ fn lifetime_lengthener<'a>(s: &'a str) -> &'static str {
 // the duration of the entire process. Similarly:
 
 #[cfg(feature = "compile-fail")]
-fn cell_lengthener<'a>(s: &'a Cell<&'a str>) -> &'a Cell<&'static str> {
+fn cell_lengthener<'a, 'b>(s: &'a Cell<&'b str>) -> &'a Cell<&'static str> {
     s
 }
 
-// But what about this?
+// But what about this? fn is a pointer to a function that takes an
 fn fn_ptr_lengthener<'a>(f: fn(&'a str) -> ()) -> fn(&'static str) -> () {
     f
 }
 
 // Ahhh, intuitively, this should work. And it does. You can take a callback that takes an arbitrary
 // borrowed string and turn it into one that takes in a static string.
+
+// ---
 
 // How can all these intuitions be formalized? It's done through the idea of *variance*.
 //
@@ -103,15 +105,18 @@ struct OutlivesExample<'a, 'b: 'a> {
 // The Rust compiler annotates every lifetime parameter with one of three settings. For a type
 // T<'a>, 'a may be:
 //
-// * *covariant*, which means that if 'a: 'b then T<'a>: T<'b>. This is the default for immutable
+// * *covariant*, which means that if 'b: 'a then T<'b>: T<'a>. This is the default for immutable
 //   data.
 //
 // * *invariant*, which means that no matter what relationship 'a and 'b have, T<'a> and T<'b> have
 //   no relationship between them. This happens if the lifetime is "inside" some sort of mutability
 //   -- whether a &mut pointer, or interior mutability like Cell/RefCell/Mutex.
 //
-// * *contravariant*, which means that if 'a: 'b then T<'b>: T<'a>. This is uncommon and only shows
+// * *contravariant*, which means that if 'b: 'a then T<'a>: T<'b>. This is uncommon and only shows
 //   up in parameters to fn pointers.
+//
+// The variance of a parameter is determined entirely through the type definition. There's no
+// marker trait for this.
 
 // ---
 
@@ -128,13 +133,13 @@ struct Multi<'a, 'b, 'c, 'd1, 'd2> {
 
 // The answers:
 // * 'a is covariant, because it only shows up in an immutable context.
-//   This means that you can define a function like:
+//   This means that, similar to the shortener functions above, you can define a function like:
 
 fn a<'a, 'b, 'c, 'd1, 'd2>(x: Multi<'static, 'b, 'c, 'd1, 'd2>) -> Multi<'a, 'b, 'c, 'd1, 'd2> {
     x
 }
 
-// * 'b is invariant, because it guards immutable data.
+// * 'b is invariant, because it is "inside" the mutable Cell context.
 // (Exercise: try writing a function that fails to compile because 'b is invariant.)
 
 // * 'c is contravariant, because it shows up in the parameter to a callback.
@@ -385,7 +390,8 @@ struct SimpleMessageCollector2<'a> {
 
 // Anyway, hope this made you feel more confident using lifetimes in your Rust code! They're
 // a very powerful way to write safe, blazing fast code. But variance can often cause obscure issues
-// in practice. Knowledge of how variance works is key to using lifetimes effectively.
+// in practice -- knowledge of how it works is key to using lifetimes effectively.
 
 // Thanks to the following people for their feedback:
 // * Nikolai Vazquez (@NikolaiVazquez on Twitter, nvzqz on GitHub)
+// * Inanna Malick (@inanna_malick on Twitter, inanna-malick on GitHub)
