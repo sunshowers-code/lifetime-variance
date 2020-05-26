@@ -109,14 +109,19 @@ struct OutlivesExample<'a, 'b: 'a> {
 //   data.
 //
 // * *invariant*, which means that even if 'b: 'a, nothing can be said about the relationship
-//   between T<'b> and T<'a>. This happens if the lifetime is "inside" some sort of mutable context
-//   -- whether a &mut reference, or interior mutability like Cell/RefCell/Mutex.
+//   between T<'b> and T<'a>. This happens if, and only if, the lifetime is present "inside" some
+//   sort of mutable context -- whether a &mut reference, or interior mutability like
+//   Cell/RefCell/Mutex.
+//
+//   To emphasize: mutability and invariance are very tightly coupled. Invariance can only happen
+//   if there's some potential mutability involved.
 //
 // * *contravariant*, which means that if 'b: 'a then T<'a>: T<'b>. This is uncommon and only shows
 //   up in parameters to fn pointers.
 //
 // The variance of a parameter is determined entirely through the type definition. There's no
 // marker trait for this.
+//
 
 // ---
 
