@@ -21,6 +21,10 @@ use std::cell::Cell;
 use std::collections::HashSet;
 use std::fmt;
 
+// -------------------------
+// (I) Building an intuition
+// -------------------------
+
 // Consider this somewhat contrived function that takes a static string and makes its lifetime
 // shorter:
 fn lifetime_shortener<'a>(s: &'static str) -> &'a str {
@@ -88,7 +92,9 @@ fn fn_ptr_lengthener<'a>(f: fn(&'a str) -> ()) -> fn(&'static str) -> () {
 // Ahhh, intuitively, this should work. And it does. You can take a callback that takes an arbitrary
 // borrowed string and turn it into one that takes in a static string.
 
-// ---
+// -------------------------
+// (II) Formalizing variance
+// -------------------------
 
 // How can all these intuitions be formalized? It's done through the idea of *variance*.
 //
@@ -109,19 +115,17 @@ struct OutlivesExample<'a, 'b: 'a> {
 //   data.
 //
 // * *invariant*, which means that even if 'b: 'a, nothing can be said about the relationship
-//   between T<'b> and T<'a>. This happens if, and only if, the lifetime is present "inside" some
-//   sort of mutable context -- whether a &mut reference, or interior mutability like
-//   Cell/RefCell/Mutex.
-//
-//   To emphasize: mutability and invariance are very tightly coupled. Invariance can only happen
-//   if there's some potential mutability involved.
+//   between T<'b> and T<'a>. This can happen for one of two reasons:
+//   * if the lifetime is present "inside" some sort of mutable context -- whether a &mut reference,
+//     or interior mutability like Cell/RefCell/Mutex.
+//   * if the lifetime is used in multiple spots where the variances conflict. See section (III) for
+//     an example.
 //
 // * *contravariant*, which means that if 'b: 'a then T<'a>: T<'b>. This is uncommon and only shows
 //   up in parameters to fn pointers.
 //
 // The variance of a parameter is determined entirely through the type definition. There's no
 // marker trait for this.
-//
 
 // ---
 
@@ -161,7 +165,9 @@ fn d1<'a, 'b, 'c, 'd1, 'd2>(x: Multi<'a, 'b, 'c, 'static, 'd2>) -> Multi<'a, 'b,
 
 // * 'd2 is invariant, because it is "inside" a &mut reference.
 
-// ---
+// -----------------------------------
+// (III) Conflicts and type parameters
+// -----------------------------------
 
 // What if a lifetime parameter is used in multiple spots with different variances? For example:
 
@@ -193,7 +199,9 @@ fn lifetime_check<'a, 'b>(x: LifetimeParams<'static, 'b>) -> LifetimeParams<'a, 
     x
 }
 
-// ---
+// -------------------------
+// (IV) Variance in practice
+// -------------------------
 
 // So why should you, as a Rust developer, care?
 
