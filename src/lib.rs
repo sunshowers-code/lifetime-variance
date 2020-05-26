@@ -108,9 +108,9 @@ struct OutlivesExample<'a, 'b: 'a> {
 // * *covariant*, which means that if 'b: 'a then T<'b>: T<'a>. This is the default for immutable
 //   data.
 //
-// * *invariant*, which means that no matter what relationship 'a and 'b have, T<'a> and T<'b> have
-//   no relationship between them. This happens if the lifetime is "inside" some sort of mutability
-//   -- whether a &mut pointer, or interior mutability like Cell/RefCell/Mutex.
+// * *invariant*, which means that even if 'b: 'a, nothing can be said about the relationship
+//   between T<'b> and T<'a>. This happens if the lifetime is "inside" some sort of mutable context
+//   -- whether a &mut reference, or interior mutability like Cell/RefCell/Mutex.
 //
 // * *contravariant*, which means that if 'b: 'a then T<'a>: T<'b>. This is uncommon and only shows
 //   up in parameters to fn pointers.
@@ -192,9 +192,12 @@ fn lifetime_check<'a, 'b>(x: LifetimeParams<'static, 'b>) -> LifetimeParams<'a, 
 
 // So why should you, as a Rust developer, care?
 
-// In general, if you're just using Arcs everywhere, you probably don't need to care. But
-// if your code involves lifetime parameters, some of the thorniest issues getting rustc to
-// work on it end up boiling down to variance issues.
+// Many Rust developers start off by using reference counted smart pointers like `Rc` or `Arc`
+// instead of borrowed data everywhere. If you're doing that, you're unlikely to run into lifetime
+// issues. But you may eventually want to switch to borrowed data to get maximum performance --
+// if so, you'll probably have to introduce lifetime parameters into your code. That's when variance
+// becomes important. Some of the thorniest issues getting rustc to accept code with pervasive
+// use of borrowed data end up boiling down to variance in some fashion.
 //
 // For example, consider this situation, extracted from some real-world Rust code:
 
