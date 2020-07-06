@@ -59,10 +59,15 @@ fn cell_example() {
 
     // But! If this function call worked...
     let shorter_foo = cell_shortener(&foo);
+    
+    // then shorter_foo would be an alias of foo, just with a shorter lifetime! Let's write the type
+    // of shorter_foo out by using another function:
+    cell_example_contd(shorter_foo, &owned_string);
+}
 
-    // shorter_foo and foo would be aliases of each other! And then you could use this shorter_foo
-    // alias to put in a non-static string:
-    shorter_foo.replace(&non_static_string);
+fn cell_example_contd<'a, 'b>(shorter_foo: &'a Cell<&'b str>, non_static_string: &'b str) {
+    // Then you could use this shorter_foo alias to put in a non-static string:
+    shorter_foo.replace(non_static_string);
 
     // and now foo, which is an alias of shorter_foo, has a non-static string in it! Whoops.
 }
