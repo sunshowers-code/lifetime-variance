@@ -56,20 +56,20 @@ fn cell_example() {
 
     // Doesn't seem like it can, right? foo promises that what's inside it is a &'static str, but
     // we tried to put in an owned string scoped to this function.
-
-    // But! If this function call worked...
-    let shorter_foo = cell_shortener(&foo);
-    
-    // then shorter_foo would be an alias of foo, just with a shorter lifetime! Let's write the type
-    // of shorter_foo out by using another function:
-    cell_example_contd(shorter_foo, &owned_string);
 }
 
-fn cell_example_contd<'a, 'b>(shorter_foo: &'a Cell<&'b str>, non_static_string: &'b str) {
-    // Then you could use this shorter_foo alias to put in a non-static string:
-    shorter_foo.replace(non_static_string);
-
-    // and now foo, which is an alias of shorter_foo, has a non-static string in it! Whoops.
+fn cell_counterexample() {
+    let foo: Cell<&'static str> = Cell::new("foo");
+    let owned_string: String = "non_static".to_owned();
+  
+    // If we pretend that cell_shortener works
+    let shorter_foo = cell_shortener(&foo);
+  
+    // then shorter_foo and foo would be aliases of each other, which would mean that you could use
+    // shorter_foo to replace foo's Cell with a non-static string:
+    shorter_foo.replace(&owned_string);
+  
+    // now foo, which is an alias of shorter_foo, has a non-static string in it! Whoops.
 }
 
 // It isn't just Cell which is problematic in this way. RefCell, OnceCell, Mutex, &mut references --
