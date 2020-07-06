@@ -58,6 +58,7 @@ fn cell_example() {
     // we tried to put in an owned string scoped to this function.
 }
 
+#[cfg(feature = "compile-fail")]
 fn cell_counterexample() {
     let foo: Cell<&'static str> = Cell::new("foo");
     let owned_string: String = "non_static".to_owned();
