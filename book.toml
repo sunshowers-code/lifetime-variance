@@ -1,0 +1,10 @@
+[book]
+title = "Lifetime Variance Example"
+authors = ["Rain"]
+language = "en"
+multilingual = false
+src = "src"
+
+[output.html]
+additional-css = ["additional/ferris.css"]
+additional-js = ["additional/ferris.js"]
