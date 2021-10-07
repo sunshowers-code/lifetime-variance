@@ -43,13 +43,9 @@ jobs:
       - name: Build mdbook
         run: |
           mdbook build
-      - name: Organize
-        run: |
-          mkdir gh-pages
-          mv book gh-pages
       - name: Deploy
         uses: JamesIves/github-pages-deploy-action@releases/v3
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BRANCH: gh-pages
-          FOLDER: gh-pages
+          FOLDER: book
