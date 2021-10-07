@@ -1,0 +1,567 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js light">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Variance in practice - Lifetime Variance Example</title>
+        <!-- Custom HTML head -->
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="additional/ferris.css">
+    </head>
+    <body>
+        <!-- Provide site root to javascript -->
+        <script type="text/javascript">
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script type="text/javascript">
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><a href="ch01-00-lifetime-variance-example.html"><strong aria-hidden="true">1.</strong> Lifetime Variance Example</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="ch01-01-building-an-intuition.html"><strong aria-hidden="true">1.1.</strong> Building an intuition</a></li><li class="chapter-item expanded "><a href="ch01-02-formalizing-variance.html"><strong aria-hidden="true">1.2.</strong> Formalizing variance</a></li><li class="chapter-item expanded "><a href="ch01-03-conflicts-and-type-parameters.html"><strong aria-hidden="true">1.3.</strong> Conflicts and type parameters</a></li><li class="chapter-item expanded "><a href="ch01-04-variance-in-practice.html" class="active"><strong aria-hidden="true">1.4.</strong> Variance in practice</a></li><li class="chapter-item expanded "><a href="ch01-05-epilogue.html"><strong aria-hidden="true">1.5.</strong> Epilogue</a></li></ol></li><li class="chapter-item expanded "><a href="ch02-00-acknowledgements.html"><strong aria-hidden="true">2.</strong> Acknowledgements</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky bordered">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light (default)</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Lifetime Variance Example</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script type="text/javascript">
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="variance-in-practice"><a class="header" href="#variance-in-practice">Variance in practice</a></h1>
+<p>So why should you, as a Rust developer, care?</p>
+<p>Many Rust developers start off by using reference counted smart pointers like
+<code>Rc</code> or <code>Arc</code> instead of borrowed data everywhere. If you're doing that, you're
+unlikely to run into lifetime issues. But you may eventually want to switch to
+borrowed data to get maximum performance -- if so, you'll probably have to introduce
+lifetime parameters into your code. That's when variance becomes important. Some
+of the thorniest issues getting rustc to accept code with pervasive use of borrowed
+data end up boiling down to variance in some fashion.</p>
+<p>For example, consider this situation, extracted from some real-world Rust code:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(dead_code)]
+</span><span class="boring">fn main() {}
+</span><span class="boring">
+</span><span class="boring">use std::collections::HashSet;
+</span><span class="boring">use std::fmt;
+</span><span class="boring">
+</span>// Consider this struct representing a message.
+struct Message&lt;'msg&gt; {
+    message: &amp;'msg str,
+}
+
+// ... this struct that collects messages to be displayed.
+struct MessageCollector&lt;'a, 'msg&gt; {
+    list: &amp;'a mut Vec&lt;Message&lt;'msg&gt;&gt;,
+}
+
+impl&lt;'a, 'msg&gt; MessageCollector&lt;'a, 'msg&gt; {
+    // This adds a message to the end of the list.
+    fn add_message(&amp;mut self, message: Message&lt;'msg&gt;) {
+        self.list.push(message);
+    }
+}
+
+// And this struct that displays collected messages.
+struct MessageDisplayer&lt;'a, 'msg&gt; {
+    list: &amp;'a Vec&lt;Message&lt;'msg&gt;&gt;,
+}
+
+impl&lt;'a, 'msg&gt; fmt::Display for MessageDisplayer&lt;'a, 'msg&gt; {
+    // This displays all the messages, separated by newlines.
+    fn fmt(&amp;self, f: &amp;mut fmt::Formatter&lt;'_&gt;) -&gt; fmt::Result {
+        for message in self.list {
+            write!(f, &quot;{}\n&quot;, message.message)?;
+        }
+        Ok(())
+    }
+}
+
+fn message_example() {
+    // Here's a simple pool of messages.
+    let mut message_pool: HashSet&lt;String&gt; = HashSet::new();
+    message_pool.insert(&quot;ten&quot;.to_owned());
+    message_pool.insert(&quot;twenty&quot;.to_owned());
+
+    // All right, let's try collecting and displaying some messages!
+    collect_and_display(&amp;message_pool);
+}
+
+fn collect_and_display&lt;'msg&gt;(message_pool: &amp;'msg HashSet&lt;String&gt;) {
+    let mut list = vec![];
+
+    // Collect some messages. (This is pretty simple but you can imagine the
+    // collector being passed into other code.)
+    let mut collector = MessageCollector { list: &amp;mut list };
+    for message in message_pool {
+        collector.add_message(Message { message });
+    }
+
+    // Now let's display those messages!
+    let displayer = MessageDisplayer { list: &amp;list };
+    println!(&quot;{}&quot;, displayer);
+}
+</code></pre></pre>
+<p>This works, but can it be simplified?</p>
+<p>Let's try reducing the number of lifetime parameters, first for the displayer.</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(dead_code)]
+</span><span class="boring">fn main() {}
+</span><span class="boring">
+</span><span class="boring">use std::collections::HashSet;
+</span><span class="boring">use std::fmt;
+</span><span class="boring">
+</span><span class="boring">struct Message&lt;'msg&gt; {
+</span><span class="boring">    message: &amp;'msg str,
+</span><span class="boring">}
+</span><span class="boring">
+</span><span class="boring">struct MessageCollector&lt;'a, 'msg&gt; {
+</span><span class="boring">    list: &amp;'a mut Vec&lt;Message&lt;'msg&gt;&gt;,
+</span><span class="boring">}
+</span><span class="boring">
+</span><span class="boring">impl&lt;'a, 'msg&gt; MessageCollector&lt;'a, 'msg&gt; {
+</span><span class="boring">    fn add_message(&amp;mut self, message: Message&lt;'msg&gt;) {
+</span><span class="boring">        self.list.push(message);
+</span><span class="boring">    }
+</span><span class="boring">}
+</span><span class="boring">
+</span>struct SimpleMessageDisplayer&lt;'a&gt; {
+    list: &amp;'a Vec&lt;Message&lt;'a&gt;&gt;,
+}
+
+impl&lt;'a&gt; fmt::Display for SimpleMessageDisplayer&lt;'a&gt; {
+    // This displays all the messages.
+    fn fmt(&amp;self, f: &amp;mut fmt::Formatter&lt;'_&gt;) -&gt; fmt::Result {
+        for message in self.list {
+            write!(f, &quot;{}\n&quot;, message.message)?;
+        }
+        Ok(())
+    }
+}
+
+fn collect_and_display_2&lt;'msg&gt;(message_pool: &amp;'msg HashSet&lt;String&gt;) {
+    // OK, let's do the same thing as collect_and_display, except using the
+    // simple displayer.
+    let mut list = vec![];
+
+    // Collect some messages.
+    let mut collector = MessageCollector { list: &amp;mut list };
+    for message in message_pool {
+        collector.add_message(Message { message });
+    }
+
+    // Finally, display them.
+    let displayer = SimpleMessageDisplayer { list: &amp;list };
+    println!(&quot;{}&quot;, displayer);
+}
+</code></pre></pre>
+<p>OK, that worked. Can we do the same for the collector? Let's try it out:</p>
+<pre><pre class="playground"><code class="language-rust does_not_compile"><span class="boring">#![allow(dead_code)]
+</span><span class="boring">fn main() {}
+</span><span class="boring">
+</span><span class="boring">use std::collections::HashSet;
+</span><span class="boring">use std::fmt;
+</span><span class="boring">
+</span><span class="boring">struct Message&lt;'msg&gt; {
+</span><span class="boring">    message: &amp;'msg str,
+</span><span class="boring">}
+</span><span class="boring">
+</span><span class="boring">struct MessageCollector&lt;'a, 'msg&gt; {
+</span><span class="boring">    list: &amp;'a mut Vec&lt;Message&lt;'msg&gt;&gt;,
+</span><span class="boring">}
+</span><span class="boring">
+</span><span class="boring">impl&lt;'a, 'msg&gt; MessageCollector&lt;'a, 'msg&gt; {
+</span><span class="boring">    fn add_message(&amp;mut self, message: Message&lt;'msg&gt;) {
+</span><span class="boring">        self.list.push(message);
+</span><span class="boring">    }
+</span><span class="boring">}
+</span><span class="boring">
+</span><span class="boring">struct SimpleMessageDisplayer&lt;'a&gt; {
+</span><span class="boring">    list: &amp;'a Vec&lt;Message&lt;'a&gt;&gt;,
+</span><span class="boring">}
+</span><span class="boring">
+</span><span class="boring">impl&lt;'a&gt; fmt::Display for SimpleMessageDisplayer&lt;'a&gt; {
+</span><span class="boring">    fn fmt(&amp;self, f: &amp;mut fmt::Formatter&lt;'_&gt;) -&gt; fmt::Result {
+</span><span class="boring">        for message in self.list {
+</span><span class="boring">            write!(f, &quot;{}\n&quot;, message.message)?;
+</span><span class="boring">        }
+</span><span class="boring">        Ok(())
+</span><span class="boring">    }
+</span><span class="boring">}
+</span><span class="boring">
+</span>struct SimpleMessageCollector&lt;'a&gt; {
+    list: &amp;'a mut Vec&lt;Message&lt;'a&gt;&gt;,
+}
+
+impl&lt;'a&gt; SimpleMessageCollector&lt;'a&gt; {
+    // This adds a message to the end of the list.
+    fn add_message(&amp;mut self, message: Message&lt;'a&gt;) {
+        self.list.push(message);
+    }
+}
+
+fn collect_and_display_3&lt;'msg&gt;(message_pool: &amp;'msg HashSet&lt;String&gt;) {
+    // OK, one more time.
+    let mut list = vec![];
+
+    // Collect some messages.
+    let mut collector = SimpleMessageCollector { list: &amp;mut list };
+    for message in message_pool {
+        collector.add_message(Message { message });
+    }
+
+    // Finally, display them.
+    let displayer = SimpleMessageDisplayer { list: &amp;list };
+    println!(&quot;{}&quot;, displayer);
+}
+</code></pre></pre>
+<p>That doesn't work! rustc (as of 1.43.1) errors out with <code>cannot borrow `list` as immutable because it is also borrowed as mutable</code>.</p>
+<p>Why did reducing the number of lifetime params work for <code>MessageDisplayer</code> but not
+<code>MessageCollector</code>? It's all because of variance. Let's have a look at the structs
+again, first the displayer:</p>
+<pre><code class="language-rust norun noplayground"><span class="boring">#![allow(dead_code)]
+</span><span class="boring">fn main() {}
+</span><span class="boring">
+</span><span class="boring">struct Message&lt;'msg&gt; {
+</span><span class="boring">    message: &amp;'msg str,
+</span><span class="boring">}
+</span><span class="boring">
+</span>struct MessageDisplayer&lt;'a, 'msg&gt; {
+    // Two lifetime parameters:
+    list: &amp;'a Vec&lt;Message&lt;'msg&gt;&gt;,
+    // Here, the compiler can vary the two independently, so the list can be
+    // held onto a shorter lifetime than 'msg, then released.
+}
+<span class="boring">
+</span><span class="boring">struct SimpleMessageDisplayer&lt;'a&gt; {
+</span><span class="boring">    // 'a is used in two spots:
+</span><span class="boring">    //
+</span><span class="boring">    //     |               |
+</span><span class="boring">    //     v               v
+</span><span class="boring">    list: &amp;'a Vec&lt;Message&lt;'a&gt;&gt;,
+</span><span class="boring">    //
+</span><span class="boring">    // But since both of them are covariant (in immutable positions), 'a is
+</span><span class="boring">    // covariant as well.  This means that the compiler can internally transform
+</span><span class="boring">    // &amp;'a Vec&lt;Message&lt;'msg&gt;&gt; into the shorter &amp;'a Vec&lt;Message&lt;'a&gt;&gt;, and hold the
+</span><span class="boring">    // list for the shorter 'a duration.
+</span><span class="boring">}
+</span><span class="boring">
+</span><span class="boring">struct MessageCollector&lt;'a, 'msg&gt; {
+</span><span class="boring">    // Two lifetime parameters, again:
+</span><span class="boring">    list: &amp;'a mut Vec&lt;Message&lt;'msg&gt;&gt;,
+</span><span class="boring">    // Here, 'a is covariant, but 'msg is invariant since it is &quot;inside&quot;
+</span><span class="boring">    // a &amp;mut reference. The compiler can vary the two independently, which
+</span><span class="boring">    // means that the list can be held onto for a shorter lifetime than 'msg.
+</span><span class="boring">}
+</span><span class="boring">
+</span><span class="boring">struct SimpleMessageCollector&lt;'a&gt; {
+</span><span class="boring">    // 'a is used in two spots again:
+</span><span class="boring">    //
+</span><span class="boring">    //     |                   |
+</span><span class="boring">    //     v                   v
+</span><span class="boring">    list: &amp;'a mut Vec&lt;Message&lt;'a&gt;&gt;,
+</span><span class="boring">    //
+</span><span class="boring">    // The first 'a is covariant, but the second one is invariant since it is
+</span><span class="boring">    // &quot;inside&quot; a &amp;mut reference! This means that 'a is invariant, and this
+</span><span class="boring">    // ends up causing the compiler to try and hold on to the list for longer
+</span><span class="boring">    // than with the standard MessageCollector.
+</span><span class="boring">}
+</span></code></pre>
+<p>The simple version:</p>
+<pre><code class="language-rust norun noplayground"><span class="boring">#![allow(dead_code)]
+</span><span class="boring">fn main() {}
+</span><span class="boring">
+</span><span class="boring">struct Message&lt;'msg&gt; {
+</span><span class="boring">    message: &amp;'msg str,
+</span><span class="boring">}
+</span><span class="boring">
+</span><span class="boring">struct MessageDisplayer&lt;'a, 'msg&gt; {
+</span><span class="boring">    // Two lifetime parameters:
+</span><span class="boring">    list: &amp;'a Vec&lt;Message&lt;'msg&gt;&gt;,
+</span><span class="boring">    // Here, the compiler can vary the two independently, so the list can be
+</span><span class="boring">    // held onto a shorter lifetime than 'msg, then released.
+</span><span class="boring">}
+</span><span class="boring">
+</span>struct SimpleMessageDisplayer&lt;'a&gt; {
+    // 'a is used in two spots:
+    //
+    //     |               |
+    //     v               v
+    list: &amp;'a Vec&lt;Message&lt;'a&gt;&gt;,
+    //
+    // But since both of them are covariant (in immutable positions), 'a is
+    // covariant as well.  This means that the compiler can internally transform
+    // &amp;'a Vec&lt;Message&lt;'msg&gt;&gt; into the shorter &amp;'a Vec&lt;Message&lt;'a&gt;&gt;, and hold the
+    // list for the shorter 'a duration.
+}
+<span class="boring">
+</span><span class="boring">struct MessageCollector&lt;'a, 'msg&gt; {
+</span><span class="boring">    // Two lifetime parameters, again:
+</span><span class="boring">    list: &amp;'a mut Vec&lt;Message&lt;'msg&gt;&gt;,
+</span><span class="boring">    // Here, 'a is covariant, but 'msg is invariant since it is &quot;inside&quot;
+</span><span class="boring">    // a &amp;mut reference. The compiler can vary the two independently, which
+</span><span class="boring">    // means that the list can be held onto for a shorter lifetime than 'msg.
+</span><span class="boring">}
+</span><span class="boring">
+</span><span class="boring">struct SimpleMessageCollector&lt;'a&gt; {
+</span><span class="boring">    // 'a is used in two spots again:
+</span><span class="boring">    //
+</span><span class="boring">    //     |                   |
+</span><span class="boring">    //     v                   v
+</span><span class="boring">    list: &amp;'a mut Vec&lt;Message&lt;'a&gt;&gt;,
+</span><span class="boring">    //
+</span><span class="boring">    // The first 'a is covariant, but the second one is invariant since it is
+</span><span class="boring">    // &quot;inside&quot; a &amp;mut reference! This means that 'a is invariant, and this
+</span><span class="boring">    // ends up causing the compiler to try and hold on to the list for longer
+</span><span class="boring">    // than with the standard MessageCollector.
+</span><span class="boring">}
+</span></code></pre>
+<p>Now the collector:</p>
+<pre><code class="language-rust norun noplayground"><span class="boring">#![allow(dead_code)]
+</span><span class="boring">fn main() {}
+</span><span class="boring">
+</span><span class="boring">struct Message&lt;'msg&gt; {
+</span><span class="boring">    message: &amp;'msg str,
+</span><span class="boring">}
+</span><span class="boring">
+</span><span class="boring">struct MessageDisplayer&lt;'a, 'msg&gt; {
+</span><span class="boring">    // Two lifetime parameters:
+</span><span class="boring">    list: &amp;'a Vec&lt;Message&lt;'msg&gt;&gt;,
+</span><span class="boring">    // Here, the compiler can vary the two independently, so the list can be
+</span><span class="boring">    // held onto a shorter lifetime than 'msg, then released.
+</span><span class="boring">}
+</span><span class="boring">
+</span><span class="boring">struct SimpleMessageDisplayer&lt;'a&gt; {
+</span><span class="boring">    // 'a is used in two spots:
+</span><span class="boring">    //
+</span><span class="boring">    //     |               |
+</span><span class="boring">    //     v               v
+</span><span class="boring">    list: &amp;'a Vec&lt;Message&lt;'a&gt;&gt;,
+</span><span class="boring">    //
+</span><span class="boring">    // But since both of them are covariant (in immutable positions), 'a is
+</span><span class="boring">    // covariant as well.  This means that the compiler can internally transform
+</span><span class="boring">    // &amp;'a Vec&lt;Message&lt;'msg&gt;&gt; into the shorter &amp;'a Vec&lt;Message&lt;'a&gt;&gt;, and hold the
+</span><span class="boring">    // list for the shorter 'a duration.
+</span><span class="boring">}
+</span><span class="boring">
+</span>struct MessageCollector&lt;'a, 'msg&gt; {
+    // Two lifetime parameters, again:
+    list: &amp;'a mut Vec&lt;Message&lt;'msg&gt;&gt;,
+    // Here, 'a is covariant, but 'msg is invariant since it is &quot;inside&quot;
+    // a &amp;mut reference. The compiler can vary the two independently, which
+    // means that the list can be held onto for a shorter lifetime than 'msg.
+}
+<span class="boring">
+</span><span class="boring">struct SimpleMessageCollector&lt;'a&gt; {
+</span><span class="boring">    // 'a is used in two spots again:
+</span><span class="boring">    //
+</span><span class="boring">    //     |                   |
+</span><span class="boring">    //     v                   v
+</span><span class="boring">    list: &amp;'a mut Vec&lt;Message&lt;'a&gt;&gt;,
+</span><span class="boring">    //
+</span><span class="boring">    // The first 'a is covariant, but the second one is invariant since it is
+</span><span class="boring">    // &quot;inside&quot; a &amp;mut reference! This means that 'a is invariant, and this
+</span><span class="boring">    // ends up causing the compiler to try and hold on to the list for longer
+</span><span class="boring">    // than with the standard MessageCollector.
+</span><span class="boring">}
+</span></code></pre>
+<p>Finally, the problematic simple version:</p>
+<pre><code class="language-rust norun noplayground"><span class="boring">#![allow(dead_code)]
+</span><span class="boring">fn main() {}
+</span><span class="boring">
+</span><span class="boring">struct Message&lt;'msg&gt; {
+</span><span class="boring">    message: &amp;'msg str,
+</span><span class="boring">}
+</span><span class="boring">
+</span><span class="boring">struct MessageDisplayer&lt;'a, 'msg&gt; {
+</span><span class="boring">    // Two lifetime parameters:
+</span><span class="boring">    list: &amp;'a Vec&lt;Message&lt;'msg&gt;&gt;,
+</span><span class="boring">    // Here, the compiler can vary the two independently, so the list can be
+</span><span class="boring">    // held onto a shorter lifetime than 'msg, then released.
+</span><span class="boring">}
+</span><span class="boring">
+</span><span class="boring">struct SimpleMessageDisplayer&lt;'a&gt; {
+</span><span class="boring">    // 'a is used in two spots:
+</span><span class="boring">    //
+</span><span class="boring">    //     |               |
+</span><span class="boring">    //     v               v
+</span><span class="boring">    list: &amp;'a Vec&lt;Message&lt;'a&gt;&gt;,
+</span><span class="boring">    //
+</span><span class="boring">    // But since both of them are covariant (in immutable positions), 'a is
+</span><span class="boring">    // covariant as well.  This means that the compiler can internally transform
+</span><span class="boring">    // &amp;'a Vec&lt;Message&lt;'msg&gt;&gt; into the shorter &amp;'a Vec&lt;Message&lt;'a&gt;&gt;, and hold the
+</span><span class="boring">    // list for the shorter 'a duration.
+</span><span class="boring">}
+</span><span class="boring">
+</span><span class="boring">struct MessageCollector&lt;'a, 'msg&gt; {
+</span><span class="boring">    // Two lifetime parameters, again:
+</span><span class="boring">    list: &amp;'a mut Vec&lt;Message&lt;'msg&gt;&gt;,
+</span><span class="boring">    // Here, 'a is covariant, but 'msg is invariant since it is &quot;inside&quot;
+</span><span class="boring">    // a &amp;mut reference. The compiler can vary the two independently, which
+</span><span class="boring">    // means that the list can be held onto for a shorter lifetime than 'msg.
+</span><span class="boring">}
+</span><span class="boring">
+</span>struct SimpleMessageCollector&lt;'a&gt; {
+    // 'a is used in two spots again:
+    //
+    //     |                   |
+    //     v                   v
+    list: &amp;'a mut Vec&lt;Message&lt;'a&gt;&gt;,
+    //
+    // The first 'a is covariant, but the second one is invariant since it is
+    // &quot;inside&quot; a &amp;mut reference! This means that 'a is invariant, and this
+    // ends up causing the compiler to try and hold on to the list for longer
+    // than with the standard MessageCollector.
+}
+</code></pre>
+<h3 id="a-final-note-if-youre-writing-a-rust-library"><a class="header" href="#a-final-note-if-youre-writing-a-rust-library">A final note if you're writing a Rust library</a></h3>
+<p>Changing the variance of a parameter (lifetime or type) from <em>covariant</em> to
+anything else, or from <em>contravariant</em> to anything else, is a BREAKING CHANGE.
+If you're following semver, it can only be done with a new major version.</p>
+<p>Changing a parameter from <em>invariant</em> to <em>co-</em> or <em>contravariant</em> is not a breaking change.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="ch01-03-conflicts-and-type-parameters.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+                            <a rel="next" href="ch01-05-epilogue.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="ch01-03-conflicts-and-type-parameters.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+                    <a rel="next" href="ch01-05-epilogue.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+        <script type="text/javascript">
+            window.playground_copyable = true;
+        </script>
+        <script src="elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="mark.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="searcher.js" type="text/javascript" charset="utf-8"></script>
+        <script src="clipboard.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="highlight.js" type="text/javascript" charset="utf-8"></script>
+        <script src="book.js" type="text/javascript" charset="utf-8"></script>
+
+        <!-- Custom JS scripts -->
+        <script type="text/javascript" src="additional/ferris.js"></script>
+    </body>
+</html>
