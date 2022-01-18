@@ -4,7 +4,7 @@ This document covers the basics of *variance* in Rust, as it applies to lifetime
 
 ## Locations
 
-This document is hosted online at [http://lifetime-variance.sunshowers.io](http://lifetime-variance.sunshowers.io). The source is hosted [on GitHub](https://github.com/sunshowers/lifetime-variance).
+This document is hosted online at [https://lifetime-variance.sunshowers.io](https://lifetime-variance.sunshowers.io). The source is hosted [on GitHub](https://github.com/sunshowers/lifetime-variance).
 
 This document is available offline by installing `git` and running the following command while online.
 
@@ -18,4 +18,4 @@ then pointing your web browser at `lifetime-variance-example/index.html`.
 
 ## License
 
-[CC0](http://creativecommons.org/publicdomain/zero/1.0/)
+[CC0](https://creativecommons.org/publicdomain/zero/1.0/)

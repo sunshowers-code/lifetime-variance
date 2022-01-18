@@ -10,6 +10,6 @@ description = "Tutorial for variance of lifetimes in Rust using code examples."
 [output.html]
 git-repository-url = "https://github.com/sunshowers/lifetime-variance"
 edit-url-template = "https://github.com/sunshowers/lifetime-variance/edit/main/{path}"
-site-url = "http://lifetime-variance.sunshowers.io"
+site-url = "https://lifetime-variance.sunshowers.io"
 additional-css = ["additional/ferris.css"]
 additional-js = ["additional/ferris.js"]
