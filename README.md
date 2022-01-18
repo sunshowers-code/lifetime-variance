@@ -9,10 +9,10 @@ This document is hosted online at [https://lifetime-variance.sunshowers.io](http
 This document is available offline by installing `git` and running the following command while online.
 
 ```
-git clone https://github.com/sunshowers/lifetime-variance/ --branch gh-pages
+git clone https://github.com/sunshowers/lifetime-variance --branch gh-pages
 ```
 
-then pointing your web browser at `lifetime-variance-example/index.html`.
+then pointing your web browser at `lifetime-variance/index.html`.
 
 [Pull requests](https://github.com/sunshowers/lifetime-variance/compare) to fix typos or unclear language are welcome!
 
