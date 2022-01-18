@@ -1,9 +1,20 @@
 # Lifetime variance in Rust
 
-This worked example covers the basics of *variance* in Rust, as it applies to
-lifetimes.
+This document covers the basics of *variance* in Rust, as it applies to lifetimes, using code examples.
 
-[Head on over to the book](http://lifetime-variance.sunshowers.io) to begin!
+## Locations
+
+This document is hosted online at [http://lifetime-variance.sunshowers.io](http://lifetime-variance.sunshowers.io). The source is hosted [on GitHub](https://github.com/sunshowers/lifetime-variance).
+
+This document is available offline by installing `git` and running the following command while online.
+
+```
+git clone https://github.com/sunshowers/lifetime-variance/ --branch gh-pages
+```
+
+then pointing your web browser at `lifetime-variance-example/index.html`.
+
+[Pull requests](https://github.com/sunshowers/lifetime-variance/compare) to fix typos or unclear language are welcome!
 
 ## License
 
