@@ -7,6 +7,7 @@ name: Docs
 
 jobs:
   docs:
+    concurrency: ci-${{ github.ref }}
     name: Build and deploy documentation
     runs-on: ubuntu-latest
     steps:
@@ -14,38 +15,17 @@ jobs:
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
-
-      - name: Install cargo-search2
-        id: install-cargo-search2
-        run: |
-          curl -LsSf https://github.com/sunshowers/cargo-search2/releases/latest/download/cargo-search2-x86_64-unknown-linux-gnu.tar.gz | tar xzf - -C ~/.cargo/bin
-        shell: bash
-      - name: Get mdbook version
-        id: mdbook-version
-        run: |
-          cargo search2 mdbook --req 0.4 --message-format github
-        shell: bash
-      - name: Attempt to load cached mdbook
-        uses: actions/cache@v2
-        id: mdbook-cache
-        with:
-          path: |
-            ~/.cargo/bin/mdbook
-            ~/.cargo/bin/mdbook.exe
-          key: ${{ runner.os }}-${{ steps.mdbook-version.outputs.hash }}
       - name: Install mdbook
-        if: steps.mdbook-cache.outputs.cache-hit != 'true'
-        uses: actions-rs/install@v0.1.2
+        uses: baptiste0928/cargo-install@v1
         with:
           crate: mdbook
-          version: ${{ steps.mdbook-version.outputs.version }}
-
-      - name: Build mdbook
+          version: 0.4
+      - name: Build book
         run: |
           mdbook build
       - name: Deploy
-        uses: JamesIves/github-pages-deploy-action@releases/v3
+        uses: JamesIves/github-pages-deploy-action@releases/v4
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          BRANCH: gh-pages
-          FOLDER: book
+          branch: gh-pages
+          folder: book
