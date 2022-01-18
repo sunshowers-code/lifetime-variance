@@ -3,7 +3,7 @@
 This worked example covers the basics of *variance* in Rust, as it applies to
 lifetimes.
 
-[Head on over to the book](https://sunshowers.github.io/lifetime-variance-example/) to begin!
+[Head on over to the book](http://lifetime-variance.sunshowers.io) to begin!
 
 ## License
 
