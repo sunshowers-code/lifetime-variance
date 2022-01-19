@@ -5,7 +5,7 @@ language = "en"
 multilingual = false
 src = "src"
 theme = "theme"
-description = "Rust tutorial for lifetime variance, using code examples."
+description = "Rust tutorial for lifetime variance, with code examples to show how covariance and contravariance works."
 
 
 [output.html]
