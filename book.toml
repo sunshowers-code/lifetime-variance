@@ -4,7 +4,8 @@ authors = ["Rain"]
 language = "en"
 multilingual = false
 src = "src"
-description = "Tutorial for variance of lifetimes in Rust using code examples."
+theme = "theme"
+description = "Rust tutorial for lifetime variance, using code examples."
 
 
 [output.html]
