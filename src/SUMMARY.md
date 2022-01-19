@@ -1,6 +1,6 @@
 # Summary
 
-- [Lifetime Variance Example](../README.md)
+- [Lifetime variance in Rust](../README.md)
   - [Building an intuition](./ch01-01-building-an-intuition.md)
   - [Formalizing variance](./ch01-02-formalizing-variance.md)
   - [Conflicts and type parameters](./ch01-03-conflicts-and-type-parameters.md)
