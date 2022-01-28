@@ -23,7 +23,7 @@ For a type `T<'a>`, `'a` may be:
      a `&mut` reference, or interior mutability like `Cell`/`RefCell`/`Mutex`.
 
      * If the lifetime is used in multiple spots where the variances conflict.
-     See [Conflicts and type parameters](./conflicts_and_type_parameters.md) for
+     See [Conflicts and type parameters](./ch01-03-conflicts-and-type-parameters.md) for
      an example.
   
   * **contravariant**, which means that if `'b: 'a` then `T<'a>: T<'b>`. This is
