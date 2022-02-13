@@ -1,0 +1,7 @@
+https://lifetime-variance.sunshowers.io/ch01-01-building-an-intuition
+https://lifetime-variance.sunshowers.io/ch01-02-formalizing-variance
+https://lifetime-variance.sunshowers.io/ch01-03-conflicts-and-type-parameters
+https://lifetime-variance.sunshowers.io/ch01-04-variance-in-practice
+https://lifetime-variance.sunshowers.io/ch01-05-epilogue
+https://lifetime-variance.sunshowers.io/ch02-00-acknowledgements
+https://lifetime-variance.sunshowers.io/
