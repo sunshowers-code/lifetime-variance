@@ -15,6 +15,8 @@ jobs:
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
+      - name: Install static-sitemap-cli
+        run: npm install static-sitemap-cli
       - name: Install mdbook
         uses: baptiste0928/cargo-install@v1
         with:
@@ -23,6 +25,10 @@ jobs:
       - name: Build book
         run: |
           mdbook build
+      - name: Generate sitemap
+        run: |
+          cd book
+          npx sscli --base https://lifetime-variance.sunshowers.io
       - name: Deploy
         uses: JamesIves/github-pages-deploy-action@releases/v4
         with:
