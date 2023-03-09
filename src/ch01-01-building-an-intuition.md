@@ -11,16 +11,21 @@ its lifetime shorter:
 Intuitively, this feels like it should compile: if a string lasts for the whole
 process it should also last for any part of it. And it does!
 
-Now let's make it slightly more complicated. Let's put some strings into a `HashSet`.
+Now let's make it a bit more complicated. Consider a mutable reference to a `HashSet`.
+
 ```rust,does_not_compile
 {{#rustdoc_include ../code/ch01-01-building-an-intuition/cell-shortener/src/main.rs:all}}
 ```
 
-`hash_set_shortener` doesn't compile :( Can you tell why? Think about it for a minute,
-try using your intuition...
+`hash_set_shortener` doesn't compile!
+
+Can you tell why? Think about it for a minute, try using your intuition...
+
 ```rust,does_not_compile
 {{#rustdoc_include ../code/ch01-01-building-an-intuition/cell-example/src/main.rs:all}}
 ```
+
+As a counterexample:
 
 ```rust,does_not_compile
 {{#rustdoc_include ../code/ch01-01-building-an-intuition/cell-counterexample/src/main.rs:all}}
