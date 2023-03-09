@@ -244,7 +244,9 @@ and make it last the duration of the entire process. Similarly:</p>
 </span><span class="boring">
 </span><span class="boring">use std::collections::HashSet;
 </span><span class="boring">
-</span>fn hash_set_lengthener&lt;'a, 'b&gt;(s: &amp;'a mut HashSet&lt;&amp;'b str&gt;) -&gt; &amp;'a mut HashSet&lt;&amp;'static str&gt; {
+</span>fn hash_set_lengthener&lt;'a, 'b&gt;(
+    s: &amp;'a mut HashSet&lt;&amp;'b str&gt;,
+) -&gt; &amp;'a mut HashSet&lt;&amp;'static str&gt; {
     s
 }
 </code></pre></pre>
