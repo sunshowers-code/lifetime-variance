@@ -14,7 +14,6 @@
         <meta property="og:url" content="https://lifetime-variance.sunshowers.io/ch01-02-formalizing-variance.md" />
         <meta property="og:description" content="Rust tutorial for lifetime variance, with code examples to show how covariance and contravariance works." />
 
-        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
         <meta name="description" content="Rust tutorial for lifetime variance, with code examples to show how covariance and contravariance works.">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#ffffff" />
@@ -40,14 +39,15 @@
 
     </head>
     <body>
+    <div id="body-container">
         <!-- Provide site root to javascript -->
-        <script type="text/javascript">
+        <script>
             var path_to_root = "";
             var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
         </script>
 
         <!-- Work around some values being stored in localStorage wrapped in quotes -->
-        <script type="text/javascript">
+        <script>
             try {
                 var theme = localStorage.getItem('mdbook-theme');
                 var sidebar = localStorage.getItem('mdbook-sidebar');
@@ -63,7 +63,7 @@
         </script>
 
         <!-- Set the theme before any content is loaded, prevents flash -->
-        <script type="text/javascript">
+        <script>
             var theme;
             try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
             if (theme === null || theme === undefined) { theme = default_theme; }
@@ -75,12 +75,14 @@
         </script>
 
         <!-- Hide / unhide sidebar before it is displayed -->
-        <script type="text/javascript">
+        <script>
             var html = document.querySelector('html');
-            var sidebar = 'hidden';
+            var sidebar = null;
             if (document.body.clientWidth >= 1080) {
                 try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
                 sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
             }
             html.classList.remove('sidebar-visible');
             html.classList.add("sidebar-" + sidebar);
@@ -106,7 +108,7 @@
                             <i class="fa fa-paint-brush"></i>
                         </button>
                         <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
-                            <li role="none"><button role="menuitem" class="theme" id="light">Light (default)</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
@@ -145,7 +147,7 @@
                 </div>
 
                 <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
-                <script type="text/javascript">
+                <script>
                     document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
                     document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
                     Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
@@ -156,7 +158,6 @@
                 <div id="content" class="content">
                     <main>
                         <h1 id="formalizing-variance"><a class="header" href="#formalizing-variance">Formalizing variance</a></h1>
-<p>How can all these intuitions be formalized? It's done through the idea of <em>variance</em>.</p>
 <p>Some kinds of memory live longer than others.  This is captured through the idea
 of the <em>outlives</em> relationship. If <code>'b</code> outlives <code>'a</code>, it is written as <code>'b: 'a</code>.
 For example, in the definition:</p>
@@ -166,8 +167,7 @@ For example, in the definition:</p>
 </span>struct OutlivesExample&lt;'a, 'b: 'a&gt; {
     a_str: &amp;'a str,
     b_str: &amp;'b str,
-}
-</code></pre>
+}</code></pre>
 <p>the borrowed string <code>b_str</code> lives at least as long as <code>a_str</code>, and possibly longer.</p>
 <p> </p>
 <p>The Rust compiler annotates every lifetime parameter with one of three settings.
@@ -183,7 +183,7 @@ the relationship between <code>T&lt;'b&gt;</code> and <code>T&lt;'a&gt;</code>. 
 <ul>
 <li>
 <p>If the lifetime is present &quot;inside&quot; some sort of mutable context -- whether
-a <code>&amp;mut</code> reference, or interior mutability like <code>Cell</code>/<code>RefCell</code>/<code>Mutex</code>.</p>
+a <code>&amp;mut</code> reference, or interior mutability like <code>RefCell</code>, <code>OnceCell</code>, or<code>Mutex</code>.</p>
 </li>
 <li>
 <p>If the lifetime is used in multiple spots where the variances conflict.
@@ -229,8 +229,7 @@ There's no marker trait for this.</p>
 </span><span class="boring">    x: Multi&lt;'a, 'b, 'c, 'static, 'd2&gt;
 </span><span class="boring">) -&gt; Multi&lt;'a, 'b, 'c, 'd1, 'd2&gt; {
 </span><span class="boring">    x
-</span><span class="boring">}
-</span></code></pre>
+</span><span class="boring">}</span></code></pre>
 <h3 id="the-answers"><a class="header" href="#the-answers">The answers</a></h3>
 <ul>
 <li><code>'a</code> is <em>covariant</em>, because it only shows up in an immutable context.
@@ -264,8 +263,7 @@ This means that, similar to the shortener functions above, you can define a func
 </span><span class="boring">    x: Multi&lt;'a, 'b, 'c, 'static, 'd2&gt;
 </span><span class="boring">) -&gt; Multi&lt;'a, 'b, 'c, 'd1, 'd2&gt; {
 </span><span class="boring">    x
-</span><span class="boring">}
-</span></code></pre></pre>
+</span><span class="boring">}</span></code></pre></pre>
 <ul>
 <li><code>'b</code> is <em>invariant</em>, because it is &quot;inside&quot; the mutable <code>Cell</code> context.</li>
 </ul>
@@ -303,8 +301,7 @@ This means that, similar to the shortener functions above, you can define a func
 </span><span class="boring">    x: Multi&lt;'a, 'b, 'c, 'static, 'd2&gt;
 </span><span class="boring">) -&gt; Multi&lt;'a, 'b, 'c, 'd1, 'd2&gt; {
 </span><span class="boring">    x
-</span><span class="boring">}
-</span></code></pre></pre>
+</span><span class="boring">}</span></code></pre></pre>
 <ul>
 <li><code>'d1</code> is <em>covariant</em>! Even though it is a mutable reference, it is not &quot;inside&quot; the <code>&amp;mut</code> pointer.</li>
 </ul>
@@ -336,8 +333,7 @@ This means that, similar to the shortener functions above, you can define a func
     x: Multi&lt;'a, 'b, 'c, 'static, 'd2&gt;
 ) -&gt; Multi&lt;'a, 'b, 'c, 'd1, 'd2&gt; {
     x
-}
-</code></pre></pre>
+}</code></pre></pre>
 <ul>
 <li><code>'d2</code> is <em>invariant</em>, because it is &quot;inside&quot; a <code>&amp;mut</code> reference.</li>
 </ul>
@@ -374,22 +370,23 @@ This means that, similar to the shortener functions above, you can define a func
 
 
 
-        <script type="text/javascript">
+        <script>
             window.playground_copyable = true;
         </script>
 
 
-        <script src="elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
-        <script src="mark.min.js" type="text/javascript" charset="utf-8"></script>
-        <script src="searcher.js" type="text/javascript" charset="utf-8"></script>
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
 
-        <script src="clipboard.min.js" type="text/javascript" charset="utf-8"></script>
-        <script src="highlight.js" type="text/javascript" charset="utf-8"></script>
-        <script src="book.js" type="text/javascript" charset="utf-8"></script>
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
 
         <!-- Custom JS scripts -->
-        <script type="text/javascript" src="additional/ferris.js"></script>
+        <script src="additional/ferris.js"></script>
 
 
+    </div>
     </body>
 </html>

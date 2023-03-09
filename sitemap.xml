@@ -2,30 +2,30 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
         <loc>https://lifetime-variance.sunshowers.io/</loc>
-        <lastmod>2022-10-30T16:09:40.234Z</lastmod>
+        <lastmod>2023-03-09T04:59:50.525Z</lastmod>
     </url>
     <url>
         <loc>https://lifetime-variance.sunshowers.io/ch01-01-building-an-intuition</loc>
-        <lastmod>2022-10-30T16:09:40.234Z</lastmod>
+        <lastmod>2023-03-09T04:59:50.525Z</lastmod>
     </url>
     <url>
         <loc>https://lifetime-variance.sunshowers.io/ch01-02-formalizing-variance</loc>
-        <lastmod>2022-10-30T16:09:40.234Z</lastmod>
+        <lastmod>2023-03-09T04:59:50.525Z</lastmod>
     </url>
     <url>
         <loc>https://lifetime-variance.sunshowers.io/ch01-03-conflicts-and-type-parameters</loc>
-        <lastmod>2022-10-30T16:09:40.234Z</lastmod>
+        <lastmod>2023-03-09T04:59:50.525Z</lastmod>
     </url>
     <url>
         <loc>https://lifetime-variance.sunshowers.io/ch01-04-variance-in-practice</loc>
-        <lastmod>2022-10-30T16:09:40.238Z</lastmod>
+        <lastmod>2023-03-09T04:59:50.529Z</lastmod>
     </url>
     <url>
         <loc>https://lifetime-variance.sunshowers.io/ch01-05-epilogue</loc>
-        <lastmod>2022-10-30T16:09:40.238Z</lastmod>
+        <lastmod>2023-03-09T04:59:50.529Z</lastmod>
     </url>
     <url>
         <loc>https://lifetime-variance.sunshowers.io/ch02-00-acknowledgements</loc>
-        <lastmod>2022-10-30T16:09:40.238Z</lastmod>
+        <lastmod>2023-03-09T04:59:50.529Z</lastmod>
     </url>
 </urlset>
