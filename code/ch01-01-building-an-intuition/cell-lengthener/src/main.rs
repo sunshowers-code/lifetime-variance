@@ -1,10 +1,10 @@
 #![allow(dead_code)]
 fn main() {}
 
-use std::cell::Cell;
+use std::collections::HashSet;
 
 // ANCHOR: all
-fn cell_lengthener<'a, 'b>(s: &'a Cell<&'b str>) -> &'a Cell<&'static str> {
+fn hash_set_lengthener<'a, 'b>(s: &'a mut HashSet<&'b str>) -> &'a mut HashSet<&'static str> {
     s
 }
 

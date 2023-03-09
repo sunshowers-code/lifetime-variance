@@ -1,7 +1,5 @@
 # Formalizing variance
 
-How can all these intuitions be formalized? It's done through the idea of *variance*.
-
 Some kinds of memory live longer than others.  This is captured through the idea
 of the *outlives* relationship. If `'b` outlives `'a`, it is written as `'b: 'a`.
 For example, in the definition:
@@ -20,7 +18,7 @@ For a type `T<'a>`, `'a` may be:
   * **invariant**, which means that even if `'b: 'a`, nothing can be said about
   the relationship between `T<'b>` and `T<'a>`. This can happen for one of two reasons:
      * If the lifetime is present "inside" some sort of mutable context -- whether
-     a `&mut` reference, or interior mutability like `Cell`/`RefCell`/`Mutex`.
+     a `&mut` reference, or interior mutability like `RefCell`, `OnceCell`, or`Mutex`.
 
      * If the lifetime is used in multiple spots where the variances conflict.
      See [Conflicts and type parameters](./ch01-03-conflicts-and-type-parameters.md) for
