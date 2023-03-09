@@ -178,35 +178,39 @@ its lifetime shorter:</p>
 <!-- Note: all the code sample names begin with "cell" rather than "hash-set" as you might expect. This is because hash sets should  -->
 <p>Intuitively, this feels like it should compile: if a string lasts for the whole
 process it should also last for any part of it. And it does!</p>
-<p>Now let's make it slightly more complicated. Let's put some strings into a <code>HashSet</code>.</p>
+<p>Now let's make it a bit more complicated. Consider a mutable reference to a <code>HashSet</code>.</p>
 <pre><pre class="playground"><code class="language-rust does_not_compile"><span class="boring">#![allow(dead_code)]
 </span><span class="boring">fn main() {}
 </span><span class="boring">
 </span><span class="boring">use std::collections::HashSet;
 </span><span class="boring">
-</span>fn hash_set_shortener&lt;'a, 'b&gt;(s: &amp;'a mut HashSet&lt;&amp;'static str&gt;) -&gt; &amp;'a mut HashSet&lt;&amp;'b str&gt; {
+</span>fn hash_set_shortener&lt;'a, 'b&gt;(
+    s: &amp;'a mut HashSet&lt;&amp;'static str&gt;,
+) -&gt; &amp;'a mut HashSet&lt;&amp;'b str&gt; {
     s
 }
 </code></pre></pre>
-<p><code>hash_set_shortener</code> doesn't compile :( Can you tell why? Think about it for a minute,
-try using your intuition...</p>
+<p><code>hash_set_shortener</code> doesn't compile!</p>
+<p>Can you tell why? Think about it for a minute, try using your intuition...</p>
 <pre><pre class="playground"><code class="language-rust does_not_compile"><span class="boring">#![allow(dead_code)]
 </span><span class="boring">fn main() {}
 </span><span class="boring">
-</span><span class="boring">use std::cell::Cell;
+</span><span class="boring">use std::collections::HashSet;
+</span><span class="boring">use std::iter::FromIterator;
 </span><span class="boring">
-</span>fn cell_example() {
-    // Consider this Cell. It holds a static string.
-    let foo: Cell&lt;&amp;'static str&gt; = Cell::new(&quot;foo&quot;);
+</span>fn hash_set_example() {
+    // Consider this HashSet over static strings.
+    let mut my_set: HashSet&lt;&amp;'static str&gt; = HashSet::from_iter([&quot;static&quot;]);
 
     // Do you think this can work?
     let owned_string: String = &quot;non_static&quot;.to_owned();
-    foo.replace(&amp;owned_string);
+    my_set.insert(&amp;owned_string);
 
-    // Doesn't seem like it can, right? foo promises that what's inside it is
-    // a &amp;'static str, but we tried to put in an owned string scoped to this
+    // Doesn't seem like it can, right? my_set promises that the &amp;strs inside it
+    // are all 'static, but we tried to put in an owned string scoped to this
     // function.
 }</code></pre></pre>
+<p>As a counterexample:</p>
 <pre><pre class="playground"><code class="language-rust does_not_compile"><span class="boring">#![allow(dead_code)]
 </span><span class="boring">fn main() {}
 </span><span class="boring">
@@ -217,18 +221,19 @@ try using your intuition...</p>
 </span><span class="boring">}
 </span><span class="boring">
 </span>fn hash_set_counterexample() {
-    let mut foo: HashSet&lt;&amp;'static str&gt; = HashSet::from_iter([&quot;static&quot;]);
+    let mut my_set: HashSet&lt;&amp;'static str&gt; = HashSet::from_iter([&quot;static&quot;]);
     let owned_string: String = &quot;non_static&quot;.to_owned();
-  
-    // If we pretend that hash_set_shortener works
-    let shorter_foo = hash_set_shortener(&amp;mut foo);
-  
-    // then `shorter_foo` and `foo` would be aliases of each other, which would
-    // mean that you could use `shorter_foo` to insert a non-static string:
-    shorter_foo.replace(&amp;owned_string);
-  
-    // Now `foo`, which is an alias of `shorter_foo`, has a non-static string
-    // in it! Whoops.
+
+    // If we pretend that hash_set_shortener works...
+    let shorter_set = hash_set_shortener(&amp;mut my_set);
+
+    // then you could use `shorter_set` to insert a non-static string:
+    shorter_set.insert(&amp;owned_string);
+
+    // Now we can drop `shorter_set` to regain the ability to use `my_set`:
+    std::mem::drop(shorter_set);
+
+    // And my_set now has a non-static string in it. Whoops!
 }</code></pre></pre>
 <p>It isn't just <code>&amp;mut</code> which is problematic in this way. This also occurs with any sort of interior
 mutability, like <code>RefCell</code>, <code>OnceCell</code>, or <code>Mutex</code> -- anything inside some sort of mutable context
