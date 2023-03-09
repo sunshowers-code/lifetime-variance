@@ -4,7 +4,9 @@ fn main() {}
 use std::collections::HashSet;
 
 // ANCHOR: all
-fn hash_set_lengthener<'a, 'b>(s: &'a mut HashSet<&'b str>) -> &'a mut HashSet<&'static str> {
+fn hash_set_lengthener<'a, 'b>(
+    s: &'a mut HashSet<&'b str>,
+) -> &'a mut HashSet<&'static str> {
     s
 }
 
