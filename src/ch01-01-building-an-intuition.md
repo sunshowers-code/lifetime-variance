@@ -52,7 +52,7 @@ borrowed string.
 {{#rustdoc_include ../code/ch01-01-building-an-intuition/fn-ptr-lengthener/src/main.rs:all}}
 ```
 
-This feels like should work. You can take a callback that takes an arbitrary borrowed string and
+This feels like it should work. You can take a callback that takes an arbitrary borrowed string and
 turn it into one that takes in a static string, since you're weakening the guarantee. And it does.
 
 How can we handle these different cases in a principled way? That's where variance comes in. We're
