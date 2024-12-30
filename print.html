@@ -1,10 +1,10 @@
 <!DOCTYPE HTML>
-<html lang="en" class="sidebar-visible no-js light">
+<html lang="en" class="light sidebar-visible" dir="ltr">
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
         <title>Lifetime Variance Example</title>
-        <meta name="robots" content="noindex" />
+        <meta name="robots" content="noindex">
 
 
         <!-- Custom HTML head -->
@@ -17,7 +17,7 @@
 
         <meta name="description" content="Rust tutorial for lifetime variance, with code examples to show how covariance and contravariance works.">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="theme-color" content="#ffffff" />
+        <meta name="theme-color" content="#ffffff">
 
         <link rel="icon" href="favicon.svg">
         <link rel="shortcut icon" href="favicon.png">
@@ -38,15 +38,17 @@
         <!-- Custom theme stylesheets -->
         <link rel="stylesheet" href="additional/ferris.css">
 
-    </head>
-    <body>
-    <div id="body-container">
+
         <!-- Provide site root to javascript -->
         <script>
             var path_to_root = "";
             var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
         </script>
-
+        <!-- Start loading toc.js asap -->
+        <script src="toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
         <!-- Work around some values being stored in localStorage wrapped in quotes -->
         <script>
             try {
@@ -68,43 +70,49 @@
             var theme;
             try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
             if (theme === null || theme === undefined) { theme = default_theme; }
-            var html = document.querySelector('html');
-            html.classList.remove('no-js')
+            const html = document.documentElement;
             html.classList.remove('light')
             html.classList.add(theme);
-            html.classList.add('js');
+            html.classList.add("js");
         </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
 
         <!-- Hide / unhide sidebar before it is displayed -->
         <script>
-            var html = document.querySelector('html');
             var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
             if (document.body.clientWidth >= 1080) {
                 try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
                 sidebar = sidebar || 'visible';
             } else {
                 sidebar = 'hidden';
             }
+            sidebar_toggle.checked = sidebar === 'visible';
             html.classList.remove('sidebar-visible');
             html.classList.add("sidebar-" + sidebar);
         </script>
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
-            <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="../index.html"><strong aria-hidden="true">1.</strong> Lifetime variance in Rust</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="ch01-01-building-an-intuition.html"><strong aria-hidden="true">1.1.</strong> Building an intuition</a></li><li class="chapter-item expanded "><a href="ch01-02-formalizing-variance.html"><strong aria-hidden="true">1.2.</strong> Formalizing variance</a></li><li class="chapter-item expanded "><a href="ch01-03-conflicts-and-type-parameters.html"><strong aria-hidden="true">1.3.</strong> Conflicts and type parameters</a></li><li class="chapter-item expanded "><a href="ch01-04-variance-in-practice.html"><strong aria-hidden="true">1.4.</strong> Variance in practice</a></li><li class="chapter-item expanded "><a href="ch01-05-epilogue.html"><strong aria-hidden="true">1.5.</strong> Epilogue</a></li></ol></li><li class="chapter-item expanded "><a href="ch02-00-acknowledgements.html"><strong aria-hidden="true">2.</strong> Acknowledgements</a></li></ol>
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
             </div>
-            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
 
         <div id="page-wrapper" class="page-wrapper">
 
             <div class="page">
-                                <div id="menu-bar-hover-placeholder"></div>
-                <div id="menu-bar" class="menu-bar sticky bordered">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
                     <div class="left-buttons">
-                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
                             <i class="fa fa-bars"></i>
-                        </button>
+                        </label>
                         <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
                             <i class="fa fa-paint-brush"></i>
                         </button>
@@ -200,10 +208,10 @@ process it should also last for any part of it. And it does!</p>
 </span><span class="boring">
 </span>fn hash_set_example() {
     // Consider this HashSet over static strings.
-    let mut my_set: HashSet&lt;&amp;'static str&gt; = HashSet::from_iter([&quot;static&quot;]);
+    let mut my_set: HashSet&lt;&amp;'static str&gt; = HashSet::from_iter(["static"]);
 
     // Do you think this can work?
-    let owned_string: String = &quot;non_static&quot;.to_owned();
+    let owned_string: String = "non_static".to_owned();
     my_set.insert(&amp;owned_string);
 
     // Doesn't seem like it can, right? my_set promises that the &amp;strs inside it
@@ -221,8 +229,8 @@ process it should also last for any part of it. And it does!</p>
 </span><span class="boring">}
 </span><span class="boring">
 </span>fn hash_set_counterexample() {
-    let mut my_set: HashSet&lt;&amp;'static str&gt; = HashSet::from_iter([&quot;static&quot;]);
-    let owned_string: String = &quot;non_static&quot;.to_owned();
+    let mut my_set: HashSet&lt;&amp;'static str&gt; = HashSet::from_iter(["static"]);
+    let owned_string: String = "non_static".to_owned();
 
     // If we pretend that hash_set_shortener works...
     let shorter_set = hash_set_shortener(&amp;mut my_set);
@@ -238,7 +246,7 @@ process it should also last for any part of it. And it does!</p>
 <p>It isn't just <code>&amp;mut</code> which is problematic in this way. This also occurs with any sort of interior
 mutability, like <code>RefCell</code>, <code>OnceCell</code>, or <code>Mutex</code> -- anything inside some sort of mutable context
 has this issue.</p>
-<p>Now, what about a hypothetical &quot;lengthener&quot; function?</p>
+<p>Now, what about a hypothetical "lengthener" function?</p>
 <pre><pre class="playground"><code class="language-rust does_not_compile"><span class="boring">#![allow(dead_code)]
 </span><span class="boring">fn main() {}
 </span><span class="boring">
@@ -267,7 +275,7 @@ borrowed string.</p>
 </span>fn fn_ptr_lengthener&lt;'a&gt;(f: fn(&amp;'a str) -&gt; ()) -&gt; fn(&amp;'static str) -&gt; () {
     f
 }</code></pre></pre>
-<p>This feels like should work. You can take a callback that takes an arbitrary borrowed string and
+<p>This feels like it should work. You can take a callback that takes an arbitrary borrowed string and
 turn it into one that takes in a static string, since you're weakening the guarantee. And it does.</p>
 <p>How can we handle these different cases in a principled way? That's where variance comes in. We're
 going to talk about this in the next chapter, <em><a href="ch01-02-formalizing-variance.html">Formalizing variance</a></em>.</p>
@@ -296,7 +304,7 @@ default for immutable data.</p>
 the relationship between <code>T&lt;'b&gt;</code> and <code>T&lt;'a&gt;</code>. This can happen for one of two reasons:</p>
 <ul>
 <li>
-<p>If the lifetime is present &quot;inside&quot; some sort of mutable context -- whether
+<p>If the lifetime is present "inside" some sort of mutable context -- whether
 a <code>&amp;mut</code> reference, or interior mutability like <code>RefCell</code>, <code>OnceCell</code>, or<code>Mutex</code>.</p>
 </li>
 <li>
@@ -379,7 +387,7 @@ This means that, similar to the shortener functions above, you can define a func
 </span><span class="boring">    x
 </span><span class="boring">}</span></code></pre></pre>
 <ul>
-<li><code>'b</code> is <em>invariant</em>, because it is &quot;inside&quot; the mutable <code>Cell</code> context.</li>
+<li><code>'b</code> is <em>invariant</em>, because it is "inside" the mutable <code>Cell</code> context.</li>
 </ul>
 <blockquote>
 <p><strong>Exercise</strong>: try writing a function that fails to compile because <code>'b</code> is <em>invariant</em>.</p>
@@ -417,7 +425,7 @@ This means that, similar to the shortener functions above, you can define a func
 </span><span class="boring">    x
 </span><span class="boring">}</span></code></pre></pre>
 <ul>
-<li><code>'d1</code> is <em>covariant</em>! Even though it is a mutable reference, it is not &quot;inside&quot; the <code>&amp;mut</code> pointer.</li>
+<li><code>'d1</code> is <em>covariant</em>! Even though it is a mutable reference, it is not "inside" the <code>&amp;mut</code> pointer.</li>
 </ul>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(dead_code)]
 </span><span class="boring">fn main() {}
@@ -449,7 +457,7 @@ This means that, similar to the shortener functions above, you can define a func
     x
 }</code></pre></pre>
 <ul>
-<li><code>'d2</code> is <em>invariant</em>, because it is &quot;inside&quot; a <code>&amp;mut</code> reference.</li>
+<li><code>'d2</code> is <em>invariant</em>, because it is "inside" a <code>&amp;mut</code> reference.</li>
 </ul>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="conflicts-and-type-parameters"><a class="header" href="#conflicts-and-type-parameters">Conflicts and type parameters</a></h1>
 <p>What if a lifetime parameter is used in multiple spots with different variances?
@@ -565,7 +573,7 @@ impl&lt;'a, 'msg&gt; fmt::Display for MessageDisplayer&lt;'a, 'msg&gt; {
     // This displays all the messages, separated by newlines.
     fn fmt(&amp;self, f: &amp;mut fmt::Formatter&lt;'_&gt;) -&gt; fmt::Result {
         for message in self.list {
-            write!(f, &quot;{}\n&quot;, message.message)?;
+            write!(f, "{}\n", message.message)?;
         }
         Ok(())
     }
@@ -574,8 +582,8 @@ impl&lt;'a, 'msg&gt; fmt::Display for MessageDisplayer&lt;'a, 'msg&gt; {
 fn message_example() {
     // Here's a simple pool of messages.
     let mut message_pool: HashSet&lt;String&gt; = HashSet::new();
-    message_pool.insert(&quot;ten&quot;.to_owned());
-    message_pool.insert(&quot;twenty&quot;.to_owned());
+    message_pool.insert("ten".to_owned());
+    message_pool.insert("twenty".to_owned());
 
     // All right, let's try collecting and displaying some messages!
     collect_and_display(&amp;message_pool);
@@ -593,7 +601,7 @@ fn collect_and_display&lt;'msg&gt;(message_pool: &amp;'msg HashSet&lt;String&gt;
 
     // Now let's display those messages!
     let displayer = MessageDisplayer { list: &amp;list };
-    println!(&quot;{}&quot;, displayer);
+    println!("{}", displayer);
 }</code></pre></pre>
 <p>This works, but can it be simplified?</p>
 <p>Let's try reducing the number of lifetime parameters, first for the displayer.</p>
@@ -625,7 +633,7 @@ impl&lt;'a&gt; fmt::Display for SimpleMessageDisplayer&lt;'a&gt; {
     // This displays all the messages.
     fn fmt(&amp;self, f: &amp;mut fmt::Formatter&lt;'_&gt;) -&gt; fmt::Result {
         for message in self.list {
-            write!(f, &quot;{}\n&quot;, message.message)?;
+            write!(f, "{}\n", message.message)?;
         }
         Ok(())
     }
@@ -644,7 +652,7 @@ fn collect_and_display_2&lt;'msg&gt;(message_pool: &amp;'msg HashSet&lt;String&g
 
     // Finally, display them.
     let displayer = SimpleMessageDisplayer { list: &amp;list };
-    println!(&quot;{}&quot;, displayer);
+    println!("{}", displayer);
 }</code></pre></pre>
 <p>OK, that worked. Can we do the same for the collector? Let's try it out:</p>
 <pre><pre class="playground"><code class="language-rust does_not_compile"><span class="boring">#![allow(dead_code)]
@@ -674,7 +682,7 @@ fn collect_and_display_2&lt;'msg&gt;(message_pool: &amp;'msg HashSet&lt;String&g
 </span><span class="boring">impl&lt;'a&gt; fmt::Display for SimpleMessageDisplayer&lt;'a&gt; {
 </span><span class="boring">    fn fmt(&amp;self, f: &amp;mut fmt::Formatter&lt;'_&gt;) -&gt; fmt::Result {
 </span><span class="boring">        for message in self.list {
-</span><span class="boring">            write!(f, &quot;{}\n&quot;, message.message)?;
+</span><span class="boring">            write!(f, "{}\n", message.message)?;
 </span><span class="boring">        }
 </span><span class="boring">        Ok(())
 </span><span class="boring">    }
@@ -703,7 +711,7 @@ fn collect_and_display_3&lt;'msg&gt;(message_pool: &amp;'msg HashSet&lt;String&g
 
     // Finally, display them.
     let displayer = SimpleMessageDisplayer { list: &amp;list };
-    println!(&quot;{}&quot;, displayer);
+    println!("{}", displayer);
 }</code></pre></pre>
 <p>That doesn't work! rustc (as of 1.43.1) errors out with <code>cannot borrow `list` as immutable because it is also borrowed as mutable</code>.</p>
 <p>Why did reducing the number of lifetime params work for <code>MessageDisplayer</code> but not
@@ -739,7 +747,7 @@ again, first the displayer:</p>
 </span><span class="boring">struct MessageCollector&lt;'a, 'msg&gt; {
 </span><span class="boring">    // Two lifetime parameters, again:
 </span><span class="boring">    list: &amp;'a mut Vec&lt;Message&lt;'msg&gt;&gt;,
-</span><span class="boring">    // Here, 'a is covariant, but 'msg is invariant since it is &quot;inside&quot;
+</span><span class="boring">    // Here, 'a is covariant, but 'msg is invariant since it is "inside"
 </span><span class="boring">    // a &amp;mut reference. The compiler can vary the two independently, which
 </span><span class="boring">    // means that the list can be held onto for a shorter lifetime than 'msg.
 </span><span class="boring">}
@@ -752,7 +760,7 @@ again, first the displayer:</p>
 </span><span class="boring">    list: &amp;'a mut Vec&lt;Message&lt;'a&gt;&gt;,
 </span><span class="boring">    //
 </span><span class="boring">    // The first 'a is covariant, but the second one is invariant since it is
-</span><span class="boring">    // &quot;inside&quot; a &amp;mut reference! This means that 'a is invariant, and this
+</span><span class="boring">    // "inside" a &amp;mut reference! This means that 'a is invariant, and this
 </span><span class="boring">    // ends up causing the compiler to try and hold on to the list for longer
 </span><span class="boring">    // than with the standard MessageCollector.
 </span><span class="boring">}</span></code></pre>
@@ -787,7 +795,7 @@ again, first the displayer:</p>
 </span><span class="boring">struct MessageCollector&lt;'a, 'msg&gt; {
 </span><span class="boring">    // Two lifetime parameters, again:
 </span><span class="boring">    list: &amp;'a mut Vec&lt;Message&lt;'msg&gt;&gt;,
-</span><span class="boring">    // Here, 'a is covariant, but 'msg is invariant since it is &quot;inside&quot;
+</span><span class="boring">    // Here, 'a is covariant, but 'msg is invariant since it is "inside"
 </span><span class="boring">    // a &amp;mut reference. The compiler can vary the two independently, which
 </span><span class="boring">    // means that the list can be held onto for a shorter lifetime than 'msg.
 </span><span class="boring">}
@@ -800,7 +808,7 @@ again, first the displayer:</p>
 </span><span class="boring">    list: &amp;'a mut Vec&lt;Message&lt;'a&gt;&gt;,
 </span><span class="boring">    //
 </span><span class="boring">    // The first 'a is covariant, but the second one is invariant since it is
-</span><span class="boring">    // &quot;inside&quot; a &amp;mut reference! This means that 'a is invariant, and this
+</span><span class="boring">    // "inside" a &amp;mut reference! This means that 'a is invariant, and this
 </span><span class="boring">    // ends up causing the compiler to try and hold on to the list for longer
 </span><span class="boring">    // than with the standard MessageCollector.
 </span><span class="boring">}</span></code></pre>
@@ -835,7 +843,7 @@ again, first the displayer:</p>
 </span>struct MessageCollector&lt;'a, 'msg&gt; {
     // Two lifetime parameters, again:
     list: &amp;'a mut Vec&lt;Message&lt;'msg&gt;&gt;,
-    // Here, 'a is covariant, but 'msg is invariant since it is &quot;inside&quot;
+    // Here, 'a is covariant, but 'msg is invariant since it is "inside"
     // a &amp;mut reference. The compiler can vary the two independently, which
     // means that the list can be held onto for a shorter lifetime than 'msg.
 }
@@ -848,7 +856,7 @@ again, first the displayer:</p>
 </span><span class="boring">    list: &amp;'a mut Vec&lt;Message&lt;'a&gt;&gt;,
 </span><span class="boring">    //
 </span><span class="boring">    // The first 'a is covariant, but the second one is invariant since it is
-</span><span class="boring">    // &quot;inside&quot; a &amp;mut reference! This means that 'a is invariant, and this
+</span><span class="boring">    // "inside" a &amp;mut reference! This means that 'a is invariant, and this
 </span><span class="boring">    // ends up causing the compiler to try and hold on to the list for longer
 </span><span class="boring">    // than with the standard MessageCollector.
 </span><span class="boring">}</span></code></pre>
@@ -883,7 +891,7 @@ again, first the displayer:</p>
 </span><span class="boring">struct MessageCollector&lt;'a, 'msg&gt; {
 </span><span class="boring">    // Two lifetime parameters, again:
 </span><span class="boring">    list: &amp;'a mut Vec&lt;Message&lt;'msg&gt;&gt;,
-</span><span class="boring">    // Here, 'a is covariant, but 'msg is invariant since it is &quot;inside&quot;
+</span><span class="boring">    // Here, 'a is covariant, but 'msg is invariant since it is "inside"
 </span><span class="boring">    // a &amp;mut reference. The compiler can vary the two independently, which
 </span><span class="boring">    // means that the list can be held onto for a shorter lifetime than 'msg.
 </span><span class="boring">}
@@ -896,7 +904,7 @@ again, first the displayer:</p>
     list: &amp;'a mut Vec&lt;Message&lt;'a&gt;&gt;,
     //
     // The first 'a is covariant, but the second one is invariant since it is
-    // &quot;inside&quot; a &amp;mut reference! This means that 'a is invariant, and this
+    // "inside" a &amp;mut reference! This means that 'a is invariant, and this
     // ends up causing the compiler to try and hold on to the list for longer
     // than with the standard MessageCollector.
 }</code></pre>
